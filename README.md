@@ -20,15 +20,13 @@ Vibe-coded apps are starting to look the same. Same layouts, same interactions, 
 
 When AI builds your app, it makes hundreds of small decisions you never see: which libraries to pull in, which patterns to implement, which assets to use. Most of the time, nobody asks what license any of it ships under. AI coding assistants don't apply license compliance reasoning by default — and unlike a human developer who intuitively knows not to copy-paste a GPL library into a proprietary codebase, they won't flag it unless explicitly asked.
 
-Three real failure modes drove this skill's design:
+These real failure modes drove this skill's design:
 
-1. **The silent dependency problem.** Claude adds a library to your project without stating its license. You ship. Six months later, legal finds a GPL dependency in your proprietary product.
+1. **The silent dependency problem.** Claude adds a library to your commercial project without declaring its license or checking compatibility. You ship. Months later, legal finds a GPL dependency in your proprietary codebase — a license incompatibility that should have been caught before a line of code was written. ip-guard addresses this by requiring Claude to declare a dependency plan with compatibility status and wait for your approval before proceeding.
 
-2. **The LICENSE file problem.** [Documented in Anthropic's GitHub issues, March 2026](https://github.com/anthropics/claude-code/issues/30148): Claude autonomously created and committed an MIT LICENSE file to a private proprietary repository — potentially relicensing the owner's IP as open source.
+2. **The content provenance gap.** Generated documentation, UI copy, and marketing content carries no audit trail by default. If content was reproduced verbatim from a copyrighted source during generation, there is no record and no flag. ip-guard instructs Claude to paraphrase rather than reproduce, and appends a provenance block to every artifact recording what sources were referenced and what needs human review.
 
-3. **The content provenance gap.** Generated documentation, UI copy, and marketing content has no audit trail. If a passage was reproduced from a copyrighted source during generation, there's no record.
-
-`ip-guard` closes all three gaps.
+`ip-guard` addresses both — keeping human oversight at every decision point where IP risk enters a commercial build.
 
 ---
 
@@ -38,7 +36,7 @@ Three real failure modes drove this skill's design:
 
 | Check | What it does |
 |---|---|
-| License target declaration | Reads existing `package.json`, `LICENSE`, or `CLAUDE.md` to infer project license, or asks the user |
+| License target declaration | Reads existing `package.json`, `LICENSE`, or `CLAUDE.md` to infer project license, or asks the user. Never creates or modifies a LICENSE file autonomously. |
 | Dependency intent scan | Lists every library Claude plans to use, with license and compatibility status, before writing code |
 | Asset source check | Flags fonts, icons, and images from unverified or commercial-only sources |
 
@@ -46,7 +44,7 @@ Three real failure modes drove this skill's design:
 
 | Signal | Claude's action |
 |---|---|
-| Pattern from a recognizable OSS project | Inline comment noting the origin; rewrites generically |
+| Open Source dependency with a restrictive license (GPL, AGPL) incompatible with project license target | Flags incompatibility and pauses before adding |
 | New import not in the pre-gen plan | Pauses, declares it with license and compatibility before proceeding |
 | Reproducing >10 lines from identifiable source | Refuses; rewrites generically; cites origin |
 | Algorithm associated with a known patent | Adds `⚠️` comment recommending pre-commercial legal review |
