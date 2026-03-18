@@ -7,6 +7,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.0.1] — March 2026
+
+### Changed
+- Updated the skill use cases in README.md
+
+---
+
 ## [1.0.0] — March 2026
 
 ### Added
