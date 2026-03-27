@@ -212,7 +212,7 @@ The skill performs license checks and dependency security scanning **automatical
 ```bash
 # From your project root:
 bash .claude/skills/ip-guard/scripts/license_audit.sh \
-  --project-license MIT \
+  --project-license <your-project-license> \
   --output license-report.md
 ```
 
