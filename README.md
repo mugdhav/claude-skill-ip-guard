@@ -203,9 +203,11 @@ The protection is **permanent and compounding**.
 
 ---
 
-## Running a Full License Audit
+## Standalone Scripts (Optional)
 
-For a post-session audit of all project dependencies:
+The skill performs license checks and dependency security scanning **automatically** during generation — no manual invocation needed. The scripts below are optional standalone tools for running the same checks outside of a Claude session, for example to audit an existing codebase independently.
+
+### License Audit
 
 ```bash
 # From your project root:
@@ -216,11 +218,7 @@ bash .claude/skills/ip-guard/scripts/license_audit.sh \
 
 Supports: **Node.js** (via `license-checker`), **Python** (via `pip-licenses`), **Rust** (via `cargo-license`), **Go** (via `go-licenses`).
 
-## Running a Dependency Security Scan
-
-The skill runs the dependency security scan **automatically** during generation — you do not need to invoke it manually. Whenever Claude is about to write code with dependencies, it resolves the transitive tree and checks against OSV before proceeding.
-
-The script below is a **standalone tool** for running the same scan outside of a generation session — for example, to audit an existing project independently of Claude:
+### Dependency Security Scan
 
 ```bash
 # From your project root:
