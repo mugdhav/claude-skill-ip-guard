@@ -24,9 +24,11 @@ These real failure modes drove this skill's design:
 
 1. **The silent dependency problem.** Claude adds a library to your commercial project without declaring its license or checking compatibility. You ship. Months later, legal finds a GPL dependency in your proprietary codebase — a license incompatibility that should have been caught before a line of code was written. ip-guard addresses this by requiring Claude to declare a dependency plan with compatibility status and wait for your approval before proceeding.
 
-2. **The content provenance gap.** Generated documentation, UI copy, and marketing content carries no audit trail by default. If content was reproduced verbatim from a copyrighted source during generation, there is no record and no flag. ip-guard instructs Claude to paraphrase rather than reproduce, and appends a provenance block to every artifact recording what sources were referenced and what needs human review.
+2. **The supply chain attack via transitive dependencies.** The LiteLLM compromise (March 2026) demonstrated that a library you never directly install can still execute malicious code on every process startup. LiteLLM was pulled in as a transitive dependency by DSPy, CrewAI, MLflow, and LangChain. ip-guard addresses this by resolving the full transitive dependency tree before any code is generated, blocking generation if any package — direct or transitive — is quarantined or has an active security advisory.
 
-`ip-guard` addresses both — keeping human oversight at every decision point where IP risk enters a commercial build.
+3. **The content provenance gap.** Generated documentation, UI copy, and marketing content carries no audit trail by default. If content was reproduced verbatim from a copyrighted source during generation, there is no record and no flag. ip-guard instructs Claude to paraphrase rather than reproduce, and appends a provenance block to every artifact recording what sources were referenced and what needs human review.
+
+`ip-guard` addresses all three — keeping human oversight at every decision point where IP or security risk enters a commercial build.
 
 ---
 
@@ -216,7 +218,9 @@ Supports: **Node.js** (via `license-checker`), **Python** (via `pip-licenses`), 
 
 ## Running a Dependency Security Scan
 
-To scan the full transitive dependency tree for vulnerabilities and quarantined packages:
+The skill runs the dependency security scan **automatically** during generation — you do not need to invoke it manually. Whenever Claude is about to write code with dependencies, it resolves the transitive tree and checks against OSV before proceeding.
+
+The script below is a **standalone tool** for running the same scan outside of a generation session — for example, to audit an existing project independently of Claude:
 
 ```bash
 # From your project root:
