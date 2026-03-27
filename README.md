@@ -38,6 +38,7 @@ These real failure modes drove this skill's design:
 |---|---|
 | License target declaration | Reads existing `package.json`, `LICENSE`, or `CLAUDE.md` to infer project license, or asks the user. Never creates or modifies a LICENSE file autonomously. |
 | Dependency intent scan | Lists every library Claude plans to use, with license and compatibility status, before writing code |
+| **Dependency security scan** | **Resolves the full transitive dependency tree and checks every package against the OSV vulnerability database and registry quarantine status. Blocks generation on any ❌ finding (compromised or quarantined package). For existing projects, presents a remediation plan identifying which direct dependency pulls in the flagged transitive package and suggests safe alternatives.** |
 | Asset source check | Flags fonts, icons, and images from unverified or commercial-only sources |
 
 ### Stage 2 — Inline Flagging (During generation)
@@ -69,6 +70,13 @@ Dependencies added this session:
 | axios     | 1.6.0   | MIT         | ✅         |
 | sharp     | 0.33.0  | Apache-2.0  | ✅         |
 
+Dependency security scan:
+- Packages scanned: 47 (2 direct, 45 transitive)
+- Advisories found: None
+- Quarantined packages: None
+- Scan tool: npm audit against OSV database
+- ⚠️ ITEMS REQUIRING REVIEW: None
+
 Patterns used:
 - Standard REST client pattern — generic algorithmic knowledge
 - Image resizing via sharp API — documented usage pattern
@@ -98,6 +106,7 @@ Pre-gen checks and inline annotations are skipped. Abbreviated provenance block 
 ## 🛡️ IP Provenance (⚡ Fast Mode)
 Date: 2026-03-17 | Target license: unknown
 Dependencies: axios (MIT), lodash (MIT)
+Security: 2 direct deps scanned, 0 advisories | ⚡ transitive scan skipped
 ⚠️ Review: None — fast mode, pre-gen checks skipped
 ---
 ```
@@ -205,6 +214,26 @@ bash .claude/skills/ip-guard/scripts/license_audit.sh \
 
 Supports: **Node.js** (via `license-checker`), **Python** (via `pip-licenses`), **Rust** (via `cargo-license`), **Go** (via `go-licenses`).
 
+## Running a Dependency Security Scan
+
+To scan the full transitive dependency tree for vulnerabilities and quarantined packages:
+
+```bash
+# From your project root:
+bash .claude/skills/ip-guard/scripts/dependency_security_scan.sh \
+  --output security-report.json
+```
+
+Add `--check-pth` on Python projects to also scan `site-packages` for suspicious `.pth` files — the persistence mechanism used in the LiteLLM supply chain compromise (March 2026):
+
+```bash
+bash .claude/skills/ip-guard/scripts/dependency_security_scan.sh --check-pth
+```
+
+Supports: **Python** (via `pip-audit` + `pipdeptree`), **Node.js** (via `npm audit`), **Rust** (via `cargo audit`).
+
+Exit codes: `0` = all clean · `1` = quarantined or vulnerable packages found · `2` = advisory-only findings
+
 ---
 
 ## File Structure
@@ -213,9 +242,11 @@ Supports: **Node.js** (via `license-checker`), **Python** (via `pip-licenses`), 
 ip-guard/
 ├── SKILL.md                          # Core skill instructions (loaded by Claude)
 ├── references/
-│   └── license-compatibility.md     # Compatibility matrix for 12+ license types
+│   ├── license-compatibility.md     # Compatibility matrix for 12+ license types
+│   └── dependency-security.md       # Scan result interpretation, remediation playbook, .pth detection
 └── scripts/
-    └── license_audit.sh             # Post-session dependency audit runner
+    ├── license_audit.sh             # Post-session license audit runner
+    └── dependency_security_scan.sh  # Transitive dependency security scan (OSV + quarantine check)
 ```
 
 ---
@@ -224,7 +255,7 @@ ip-guard/
 
 This skill is intentionally scoped to behavioral guardrails. A companion automation layer could extend it with:
 
-- Live FOSSA/Snyk API calls for real-time vulnerability + license data
+- Live FOSSA/Snyk API calls for deeper vulnerability + license data (beyond OSV)
 - USPTO patent search via n8n workflow
 - Copyleaks API integration for content originality scoring
 - Automatic SBOM (Software Bill of Materials) generation on every commit
@@ -258,4 +289,4 @@ Inspired by the gap between what AI coding assistants can do and what enterprise
 
 ---
 
-*ip-guard v1.0 — March 2026*
+*ip-guard v1.1 — March 2026*
