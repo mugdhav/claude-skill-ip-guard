@@ -12,6 +12,8 @@ Think of it as a senior engineer and a cautious lawyer looking over Claude's sho
 
 > **Analogy:** Existing license audit tools (like `license-checker` or Snyk) are smoke detectors — they alert you *after* potentially infringing code is already in your codebase. `ip-guard` is a building code inspector present *during* construction.
 
+> **Submitted for review** — This skill has been submitted to the [Anthropic Skills Registry](https://github.com/anthropics/skills) for integration. Track status at [anthropics/skills#686](https://github.com/anthropics/skills/pull/686).
+
 ---
 
 ## Why This Skill Exists
